@@ -1,6 +1,4 @@
-import type { TaskEvent } from "../lib/defineTask.ts";
-
-export type Task = (event: TaskEvent) => void | Promise<void>
+export type Task = (event: TaskEventInterface) => void | Promise<void>
 
 export type TaskWorker = () => void
 

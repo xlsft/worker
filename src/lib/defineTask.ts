@@ -3,11 +3,7 @@ import { event as events, log } from "./useTasks.ts";
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }
-/**
- * Represents a task event, including its state, data, and execution control methods.
- * @implements TaskEventInterface.
- */
-export class TaskEvent implements TaskEventInterface {
+class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
     public readonly updated: Date = new Date()
@@ -165,8 +161,7 @@ export class TaskEvent implements TaskEventInterface {
     - If it fails, it will retry up to 5 times (retry: 5)
 
  */
-
-export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => {
+export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions): TaskEvent => {
 
     const caller = ((((new Error().stack?.split("\n") || [])[2].match(/(file:\/\/\/?.*?):\d+:\d+/))?.[1])?.split('/').at(-1) || "00.unknown.task.ts").split('.')
 
@@ -181,7 +176,7 @@ export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, option
                 if (options?.delay) await new Promise(resolve => setTimeout(resolve, options.delay));
                 try {
                     event.state.status = 'running'
-                    await task(event)
+                    await task(event as TaskEvent)
                     event.state.status = 'success'
                     log?.info(`✅ Task "${event.data.name}" successfully completed`, event)
                 } catch (e) { 
