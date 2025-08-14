@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { EventEmitter } from 'node:events';
+import { encodeBase64 as encode } from "jsr:@std/encoding/base64"
 
 /**
  * Interface for a logging utility.
@@ -68,9 +69,7 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${Deno.cwd()}/${path}`
     for (const entry of Deno.readDirSync(dir)) { try {
         if (!entry.isFile || !entry.name.endsWith('.task.ts')) continue
-        console.log(`${dir}/${entry.name}`)
-        // Don`t ask... JSR bug :)
-        //? https://github.com/denoland/deno/discussions/26266
-        import(`../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..${dir}/${entry.name}`)
+        // Don`t ask either, still trying to resolve this JSR bug
+        import(`data:application/typescript;base64,${encode(Deno.readTextFileSync(`${dir}/${entry.name}`))}`)
     } catch (e) { log?.error(e) } }
 }
