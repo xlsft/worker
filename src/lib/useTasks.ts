@@ -1,6 +1,6 @@
 import type { Log } from "../types/log.types.ts";
 import { EventEmitter } from 'node:events';
-import { join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { join } from "jsr:@std/path";
 
 
 export const event = new EventEmitter();
