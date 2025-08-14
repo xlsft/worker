@@ -6,10 +6,10 @@ export {
     useTasks, event,
 }
 
-import type { Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule } from "./lib/defineTask.ts"
+import type { Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule, TaskCronScheduleSchema, TaskCronScheduleSchemaItem } from "./lib/defineTask.ts"
 import type { Log } from "./lib/useTasks.ts";
 
 export type {
-    Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule,
+    Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule, TaskCronScheduleSchema, TaskCronScheduleSchemaItem,
     Log,
 }

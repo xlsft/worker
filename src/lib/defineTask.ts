@@ -1,5 +1,7 @@
-import { event as events, log } from "./useTasks.ts";
+/// <reference types="npm:@types/node-schedule" />
 
+import { event as events, log } from "./useTasks.ts";
+import schedule from 'npm:node-schedule'
 /**
  * A function representing a task to be executed.
  * @typedef {Task}
@@ -37,7 +39,7 @@ export type TaskEventInterface = {
     }
     data: {
         name: string
-        trigger?: TaskTrigger
+        trigger: TaskTrigger
         cron: boolean
     }
     created: Date
@@ -48,10 +50,45 @@ export type TaskEventInterface = {
 }
 
 /**
- * A task trigger, which can be an event name or a Deno cron schedule.
+ * A single cron schedule specification item.
+ * Can be a number, an object specifying exact values, or a range with a step.
+ *
+ * @typedef {TaskCronScheduleSchemaItem}
+ * @property {number | { exact: number | number[] } | { start?: number; end?: number; every?: number }} 
+ *   Defines either a single value, exact values, or a range with optional step.
+ */
+export type TaskCronScheduleSchemaItem = 
+    | number
+    | { exact: number | number[] }
+    | { start?: number; end?: number; every?: number };
+
+/**
+ * Cron schedule schema for a task.
+ * Defines minute, hour, day of month, month, and day of week.
+ *
+ * @typedef {TaskCronScheduleSchema}
+ * @property {TaskCronScheduleSchemaItem} minute - Minute(s) to run the task (0–59).
+ * @property {TaskCronScheduleSchemaItem} hour - Hour(s) to run the task (0–23).
+ * @property {TaskCronScheduleSchemaItem} dayOfMonth - Day(s) of the month to run the task (1–31).
+ * @property {TaskCronScheduleSchemaItem} month - Month(s) to run the task (1–12).
+ * @property {TaskCronScheduleSchemaItem} dayOfWeek - Day(s) of the week to run the task (0–6, 0 = Sunday).
+ */
+export type TaskCronScheduleSchema = {
+    minute?: TaskCronScheduleSchemaItem
+    hour?: TaskCronScheduleSchemaItem
+    dayOfMonth?: TaskCronScheduleSchemaItem
+    month?: TaskCronScheduleSchemaItem
+    dayOfWeek?: TaskCronScheduleSchemaItem
+}
+
+/**
+ * Task cron schedule type.
+ * Can be a cron string (e.g., `"0 0 * * *"`), a specific Date, or a detailed schema.
+ *
  * @typedef {TaskTrigger}
  */
-export type TaskTrigger = string | Deno.CronSchedule;
+export type TaskTrigger = string | Date | TaskCronScheduleSchema;
+
 
 /**
  * Options for configuring a task's execution behavior.
@@ -76,6 +113,22 @@ export type TaskOptions = {
  */
 export type TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => void;
 
+const convert = (schema: TaskCronScheduleSchema): string => {
+    const field = (item?: TaskCronScheduleSchemaItem): string => {
+        if (!item) return "*"
+        if (typeof item === "number") return String(item);
+        if ('exact' in item) return Array.isArray(item.exact) ? item.exact.join(',') : String(item.exact)
+        const { start, end, every } = item
+        if (start != null && end != null) {
+            const base = `${start}-${end}`
+            return every ? `${base}/${every}` : base
+        }
+        if (every != null) return `*/${every}`
+        return `*`
+    }
+    return [field(schema.minute), field(schema.hour), field(schema.dayOfMonth), field(schema.month), field(schema.dayOfWeek)].join(` `)
+}
+
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }
 /**
@@ -91,11 +144,17 @@ export class TaskEvent implements TaskEventInterface {
 
     constructor(caller: string[], private worker: TaskWorker, trigger?: TaskTrigger) {
         const name = isNaN(Number(caller[0])) ? caller[0] : caller[1]
+        const cron = !!trigger && (
+            trigger instanceof Date ||
+            typeof trigger === 'object' ||
+            (typeof trigger === 'string' && /^(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)(\s+(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)){4}$/.test(trigger.trim()))
+        );
+
+        const _trigger = trigger ? (trigger instanceof Date || typeof trigger === 'string') ? trigger : convert(trigger as TaskCronScheduleSchema) : name
         this.data = {
             name: name,
-            trigger: trigger || name,
-            cron: !!trigger && (typeof trigger === 'object' ||
-            (typeof trigger === 'string' && /^(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)(\s+(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)){4}$/.test(trigger.trim())))
+            trigger: _trigger,
+            cron: cron
         }
     }
 
@@ -112,7 +171,7 @@ export class TaskEvent implements TaskEventInterface {
         throw new TaskCancel();
     }
 
-    public readonly emit = events.emit
+    public readonly emit = (event: string) => events.emit(event)
     
 }
 
@@ -127,7 +186,7 @@ export class TaskEvent implements TaskEventInterface {
         console.log('Running every minute');
     }, '* * * * *');
     ```
- * @example - Cron based `Deno.CronSchedule`
+ * @example - Cron based `TaskCronScheduleSchema`
     ```ts
     import { defineTask } from "@xlsft/worker";
 
@@ -277,8 +336,8 @@ export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOpti
     const event = new TaskEvent(caller, worker, trigger)
 
     log?.info(`🎯 Defining new task "${event.data.name}"`, event)
-
-    if (event.data.cron) Deno.cron(event.data.name, event.data.trigger as Deno.CronSchedule, worker)
+    
+    if (event.data.cron === true) setTimeout(() => schedule.scheduleJob(event.data.trigger as string | Date, worker), 0)
     else events.on((event.data.trigger || event.data.name) as string, worker)
 
     return event

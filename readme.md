@@ -10,7 +10,7 @@
 #
 
 <h4 align="center">
-    <strong>@xlsft/worker</strong> – Lightweight, event and cron-based task framework for Deno with zero-boilerplate setup
+    <strong>@xlsft/worker</strong> – Lightweight, event and cron-based task framework with zero-boilerplate setup
 </h4>
 <br/>
 <p align="right">
@@ -35,14 +35,16 @@
 
 <h2 id="start"><strong>⭐ Quick Start</strong></h2>
 
-**@xlsft/worker** is a simple but powerful worker engine for Deno.  
+**@xlsft/worker** is a simple but powerful worker framework.  
 It automatically loads and schedules all `*.task.ts` files from the `tasks` directory.  
 Tasks can run on a cron schedule or be triggered by events.
 
 Install `@xlsft/worker` package
 
 ```bash
-deno add jsr:@xlsft/worker
+pnpm add jsr:@xlsft/worker
+yarn add jsr:@xlsft/worker
+npx jsr add @xlsft/worker
 ```
 
 Create `tasks` folder and entry file
@@ -51,14 +53,6 @@ Create `tasks` folder and entry file
 import { useTasks } from "@xlsft/worker";
 
 useTasks()
-```
-
-As this package utilizes dynamic imports and published on JSR, make sure you set `vendor` property to true in `deno.json`
-
-```json
-{
-    "vendor": true
-}
 ```
 
 You can pass custom logger or disable logging whatsoever
@@ -76,7 +70,7 @@ import { useTasks } from "@xlsft/worker";
 useTasks({ log: false }) // Disables logging
 ```
 
-Also you can change default `tasks` folder, be aware that it needs to be path from `Deno.cwd()`
+Also you can change default `tasks` folder, be aware that it needs to be path from `process.cwd()`
 
 ```ts
 import { useTasks } from "@xlsft/worker";
@@ -112,8 +106,9 @@ tasks/
 
 A task trigger can be:
 
-1. **Cron based** — using <code><a href="https://docs.deno.com/api/deno/~/Deno.CronSchedule">Deno.CronSchedule</a></code> type or <code><a href="https://wikipedia.org/wiki/Cron">cron syntax</a></code>
+1. **Cron based** — using <code><a href="https://docs.deno.com/api/deno/~/TaskCronScheduleSchema">TaskCronScheduleSchema</a></code>-like type or <code><a href="https://wikipedia.org/wiki/Cron">cron syntax</a></code>
 2. **Event based** — for manual or cross-task triggering with <code><a href="https://nodejs.org/api/events.html#events">EventEmitter</a></code>
+3. **Date based** - for triggering task only once at some date
 
 Examples:
 
@@ -127,7 +122,7 @@ export default defineTask((event) => {
 }, '* * * * *');
 ```
 
-2. Cron based `Deno.CronSchedule`:
+2. Cron based `TaskCronScheduleSchema`:
 
 ```ts
 import { defineTask } from "@xlsft/worker";
@@ -159,17 +154,31 @@ export default defineTask((event) => {
 });
 ```
 
+5. Date based:
+
+```ts
+// name.task.ts
+
+import { defineTask } from "@xlsft/worker";
+
+export default defineTask((event) => {
+    console.log('Triggered at Tue Jan 01 2030 00:00:00');
+}, new Date(2030, 0, 1));
+```
+
 ```mermaid
 %%{init: {'flowchart': {'nodeSpacing': 12,'rankSpacing':24}}}%%
 flowchart TD
-    Cron[Cron Scheduler] --> TW[Task Workers]
     Event[Event Emitter] --> TW
+    Cron[Cron-like Scheduler] --> TW[Task Workers]
+    Date[Date Scheduler] --> TW
 
     subgraph TW[ ]
         direction BT
         TW1[Task Worker 1]
         TW2[Task Worker 2]
         TW3[Task Worker 3]
+        TW4[Task Worker ...n]
     end
 ```
 <h2 id="event"><strong>📣 Task Event</strong></h2>
@@ -187,7 +196,7 @@ export default defineTask((event) => {
     //      worker: [Function: worker],
     //      created: 2025-08-14T16:34:31.990Z,
     //      updated: 2025-08-14T16:34:31.990Z,
-    //      state: { status: "pending" },
+    //      state: { status: "running" },
     //      data: { name: "event", trigger: "event", cron: false },
     //      emit: [Function: emit]
     //  }
