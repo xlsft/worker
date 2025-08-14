@@ -10,7 +10,7 @@
 #
 
 <h4 align="center">
-    <strong>@xlsft/worker</strong> – Lightweight, event and cron-based task framework with zero-boilerplate setup
+    <strong>@xlsft/worker</strong> – Lightweight, cron, date and event-based task framework with zero-boilerplate setup
 </h4>
 <br/>
 <p align="right">
