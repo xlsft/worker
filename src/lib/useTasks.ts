@@ -72,5 +72,5 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
         if (!entry.endsWith('.task.ts')) continue
         import(`${dir}/${entry}`)
     } catch (e) { log?.error(e) } }
-    setInterval(() => {}, Infinity);
+    setInterval(() => {}, 1);
 }

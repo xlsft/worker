@@ -301,7 +301,7 @@ export class TaskEvent implements TaskEventInterface {
  */
 export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOptions): TaskEvent => {
 
-    const caller = ((((new Error().stack?.split("\n") || [])[2].match(/(file:\/\/\/?.*?):\d+:\d+/))?.[1])?.split('/').at(-1) || "00.unknown.task.ts").split('.')
+    const caller = ((new Error().stack?.split("\n").find(l => l.match(/\.(cjs|mjs|cts|mts|js|ts)(?::\d+:\d+)?$/))?.match(/(?:file:\/\/)?(.*?):\d+:\d+/)?.[1]?.split(/[\\/]/).pop() || "00.unknown.task.ts").split('.'));
 
     const worker: TaskWorker = () => { 
         if (event.state.status === 'killed') { return };
