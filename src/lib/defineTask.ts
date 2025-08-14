@@ -3,6 +3,7 @@ import { event as events, log } from "./useTasks.ts";
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }
+
 export class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
@@ -79,4 +80,5 @@ export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, option
     else events.on((event.data.trigger || event.data.name) as string, worker)
 
     return event
+    
 }

@@ -1,11 +1,10 @@
 import type { Log } from "../types/log.types.ts";
 import { EventEmitter } from 'node:events';
-import { join } from "jsr:@std/path";
+import { join } from "jsr:@std/path@1.1.2";
 
-
-export const event = new EventEmitter();
+export const event: EventEmitter = new EventEmitter();
 export let log: Log | undefined = console
-export const useTasks = (options?: { log?: Log | boolean, dir?: string }) => {
+export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void => {
     event.setMaxListeners(Infinity)
     if (options?.log && (options.log as Log).info && (options.log as Log).error) log = options.log as Log
     else if (options?.log === false) log = undefined
