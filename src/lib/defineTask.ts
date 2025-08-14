@@ -171,7 +171,7 @@ export class TaskEvent implements TaskEventInterface {
         throw new TaskCancel();
     }
 
-    public readonly emit = (event: string): boolean => {
+    public emit(event: string): boolean {
         console.log(`-------------------EMIT ${event}-------------------`)
         console.log(events, 'EVEEEENTS')
         console.log(this, 'THIIIIS') 
