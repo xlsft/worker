@@ -70,7 +70,7 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     
     for (const entry of fs.readdirSync(dir)) { try {
         if (!entry.endsWith('.task.ts')) continue
-        import(`file://${dir}/${entry}`)
+        import(`${dir}/${entry}`)
     } catch (e) { log?.error(e) } }
     setInterval(() => {}, Infinity);
 }
