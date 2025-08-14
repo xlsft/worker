@@ -2,8 +2,8 @@
 <br/>
 <div align="middle">
     <picture>
-        <source media="(prefers-color-scheme: dark)"  width="400px" srcset="https://i.imgur.com/60LPLel.png">
-        <img alt="@xlsft/worker" width="400px" src="https://i.imgur.com/oCbCI4l.png">
+        <source media="(prefers-color-scheme: dark)"  width="400px" srcset="https://i.imgur.com/cDMRWJB.png">
+        <img alt="@xlsft/worker" width="400px" src="https://i.imgur.com/KqxAlwE.png">
     </picture>
 </div>
 
