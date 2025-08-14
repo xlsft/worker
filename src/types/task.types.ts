@@ -1,12 +1,10 @@
-import type { DeepReadonly } from "./utils.types.ts";
+import type { TaskEvent } from "../lib/defineTask.ts";
 
-export type Task = (event: ReadonlyTaskEvent) => void | Promise<void>
+export type Task = (event: TaskEvent) => void | Promise<void>
 
 export type TaskWorker = () => void
 
-export type ReadonlyTaskEvent = DeepReadonly<TaskEvent>
-
-export type TaskEvent = {
+export type TaskEventInterface = {
     state: {
         status: 'pending' | 'running' | 'success' | 'failed' | 'killed' | 'canceled'
         attempt?: number
@@ -14,13 +12,11 @@ export type TaskEvent = {
     }
     data: {
         name: string
-        trigger: TaskTrigger
-        uuid: string
+        trigger?: TaskTrigger
         cron: boolean
     }
-    options?: TaskOptions
-    task: Task
-    worker: TaskWorker
+    created: Date
+    updated: Date
     kill: () => void
     cancel: () => void
     emit: (event: string) => void
@@ -34,4 +30,4 @@ export type TaskOptions = {
     times?: number
 }
 
-export type TaskModule = (task: Task, trigger: TaskTrigger, options?: TaskOptions) => void
+export type TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => void

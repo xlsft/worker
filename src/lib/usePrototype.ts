@@ -1,1 +1,0 @@
-export const usePrototype = (o: unknown, type: string): boolean => Object.prototype.toString.call(o) === `[object ${type}]`;

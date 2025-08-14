@@ -1,10 +1,12 @@
 {
     "name": "@xlsft/worker",
+    "version": "1.0.0",
+    "license": "MIT",
     "tasks": {
-        "dev": "deno run -A --watch --unstable-cron src/main.ts"
+        "dev": "deno run -A --watch --unstable-cron main.ts"
     },
     "imports": {
-        "tasks": "./src/index.ts"
+        "@xlsft/worker": "./src/mod.ts"
     },
-    "exports": {}
+    "exports": "./src/mod.ts"
 }
