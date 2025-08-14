@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { EventEmitter } from 'node:events';
-import { encodeBase64 as encode } from 'jsr:@std/encoding/base64'
+import { encodeBase64 as encode } from 'jsr:@std/encoding@1.0.10/base64'
 
 /**
  * Interface for a logging utility.
