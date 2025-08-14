@@ -48,6 +48,9 @@ npx jsr add @xlsft/worker # or...
 bunx jsr add @xlsft/worker
 ```
 
+> [!WARNING]
+> Do not use `deno add jsr:@xlsft/worker`! Due to JSR limitations with dynamic imports, it fails when registering tasks!
+
 Create `tasks` folder and entry file
 
 ```ts
