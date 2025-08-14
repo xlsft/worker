@@ -84,7 +84,7 @@ Then run your script with following commands
 ```bash
 deno run -A main.ts # or...
 bun run main.ts # or...
-node run main.js
+node main.js
 ```
 
 <h2 id="structure"><strong>📂 Project Structure & Naming</strong></h2>

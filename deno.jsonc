@@ -1,6 +1,6 @@
 {
     "name": "@xlsft/worker",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "license": "MIT",
     "tasks": {
         "dev": "deno run -A --watch --unstable-cron main.ts"

@@ -43,7 +43,7 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${process.cwd()}/${path}`
     
     for (const entry of fs.readdirSync(dir)) { try {
-        if (!['.task.ts', '.task.js', '.task.mts', '.task.mjs'].some(entry.endsWith)) continue
+        if (!['.task.ts', '.task.js', '.task.mts', '.task.mjs'].some((e) => entry.endsWith(e))) continue
         import(`${dir}/${entry}`)
     } catch (e) { log?.error(e) } }
     setInterval(() => {}, 1);
