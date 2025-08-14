@@ -27,8 +27,6 @@
 * <a href="#triggers">Task Triggers</a>
 * <a href="#emit">Calling a Task from Another Task</a>
 * <a href="#status">Project Status</a>
-* <a href="#developers">For Developers</a>
-* <a href="#license">License</a>
 
 ---
 
