@@ -2,8 +2,8 @@
 <br/>
 <div align="middle">
     <picture>
-        <source media="(prefers-color-scheme: dark)"  width="400px" srcset="https://i.imgur.com/ESMaHhv.png">
-        <img alt="SmartShell SDK Logo" width="400px" src="https://i.imgur.com/Zc091Pz.png">
+        <source media="(prefers-color-scheme: dark)"  width="400px" srcset="https://i.imgur.com/60LPLel.png">
+        <img alt="@xlsft/worker" width="400px" src="https://i.imgur.com/oCbCI4l.png">
     </picture>
 </div>
 
@@ -16,7 +16,7 @@
 <p align="right">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://i.imgur.com/CEBivQF.png">
-        <img alt="TS" src="https://i.imgur.com/TC31MjL.png">
+        <img alt="Made with <3 and TS" src="https://i.imgur.com/TC31MjL.png">
     </picture>
 </p>
 
