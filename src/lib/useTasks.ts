@@ -68,6 +68,6 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${Deno.cwd()}/${path}`
     for (const entry of Deno.readDirSync(dir)) { try {
         if (!entry.isFile || !entry.name.endsWith('.task.ts')) continue
-        import(`file://${dir}/${entry.name}`)
+        import(`${dir}/${entry.name}`)
     } catch (e) { log?.error(e) } }
 }
