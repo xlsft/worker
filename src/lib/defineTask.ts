@@ -1,7 +1,7 @@
-/// <reference types="npm:@types/node-schedule" />
+/// <reference types="npm:@types/node-schedule@2.1.8" />
 
 import { event as events, log } from "./useTasks.ts";
-import schedule from 'npm:node-schedule'
+import schedule from 'npm:node-schedule@2.1.1'
 /**
  * A function representing a task to be executed.
  * @typedef {Task}
@@ -46,7 +46,7 @@ export type TaskEventInterface = {
     updated: Date
     kill: () => void
     cancel: () => void
-    emit: (event: string) => void
+    emit: (event: string) => boolean
 }
 
 /**
@@ -171,7 +171,7 @@ export class TaskEvent implements TaskEventInterface {
         throw new TaskCancel();
     }
 
-    public readonly emit = (event: string) => events.emit(event)
+    public readonly emit = (event: string): boolean => events.emit(event)
     
 }
 
