@@ -68,12 +68,12 @@ import { useTasks } from "@xlsft/worker";
 useTasks({ log: false }) // Disables logging
 ```
 
-Also you can change default `tasks` folder, be aware that it needs to be relative path from `Deno.cwd()`
+Also you can change default `tasks` folder, be aware that it needs to be path from `Deno.cwd()`
 
 ```ts
 import { useTasks } from "@xlsft/worker";
 
-useTasks({ dir: './src/tasks' })
+useTasks({ dir: 'src/tasks' })
 ```
 
 <h2 id="structure"><strong>📂 Project Structure & Naming</strong></h2>
