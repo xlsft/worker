@@ -1,4 +1,4 @@
-import type { Task, TaskEventInterface, TaskModule, TaskOptions, TaskTrigger, TaskWorker } from "../types/task.types.ts"
+import type { Task, TaskEventInterface, TaskOptions, TaskTrigger, TaskWorker } from "../types/task.types.ts"
 import { event as events, log } from "./useTasks.ts";
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
@@ -165,7 +165,7 @@ export class TaskEvent implements TaskEventInterface {
     - If it fails, it will retry up to 5 times (retry: 5)
 
  */
-export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions): TaskEvent => {
+export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOptions): TaskEvent => {
 
     const caller = ((((new Error().stack?.split("\n") || [])[2].match(/(file:\/\/\/?.*?):\d+:\d+/))?.[1])?.split('/').at(-1) || "00.unknown.task.ts").split('.')
 
