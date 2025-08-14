@@ -12,10 +12,10 @@ export class Log extends Entity<LogEntity> {
 
     constructor(target: Partial<LogEntity>, options?: QueryOptions) { super('Log', {
 
-        type: { type: String, required: true, text: true },
-        namespace: { type: String, text: true },
-        message: { type: String, required: true, text: true },
-        session: { type: String, default: () => session, text: true },
+        type: { type: String, required: true },
+        namespace: { type: String },
+        message: { type: String, required: true },
+        session: { type: String, default: () => session },
 
     }, target, { ...options, logs: false }) }
     

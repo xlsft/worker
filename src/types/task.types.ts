@@ -1,17 +1,37 @@
-export type Task = (event: TaskEvent) => void | Promise<void>
+import type { DeepReadonly } from "./utils.types.ts";
+
+export type Task = (event: ReadonlyTaskEvent) => void | Promise<void>
 
 export type TaskWorker = () => void
 
+export type ReadonlyTaskEvent = DeepReadonly<TaskEvent>
+
 export type TaskEvent = {
-    status: 'pending' | 'running' | 'success' | 'failed'
-    name: string
-    trigger: TaskTrigger
-    uuid: string
-    cron: boolean
+    state: {
+        status: 'pending' | 'running' | 'success' | 'failed' | 'killed' | 'canceled'
+        attempt?: number
+        more?: number
+    }
+    data: {
+        name: string
+        trigger: TaskTrigger
+        uuid: string
+        cron: boolean
+    }
+    options?: TaskOptions
     task: Task
     worker: TaskWorker
+    kill: () => void
+    cancel: () => void
+    emit: (event: string) => void
 }
 
 export type TaskTrigger = string | Deno.CronSchedule
 
-export type TaskModule = (task: Task, trigger: TaskTrigger) => void
+export type TaskOptions = {
+    retry?: number
+    delay?: number
+    times?: number
+}
+
+export type TaskModule = (task: Task, trigger: TaskTrigger, options?: TaskOptions) => void

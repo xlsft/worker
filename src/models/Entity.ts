@@ -26,7 +26,6 @@ export type QueryOptions = mongoose.QueryOptions & {
 
 export type EntityMeta = {
     _id: typeof EntityID
-    _n: number
     created_at: Date
     updated_at: Date
     deleted_at: Date | null
@@ -50,7 +49,6 @@ export class Entity<Model = Record<PropertyKey, never>> {
     constructor(private name: string, definition: mongoose.SchemaDefinition, target: Partial<Model & EntityMeta> = {}, query?: QueryOptions) {
         if (!globalThis.mongooseModels) globalThis.mongooseModels = {}
         this.schema = new mongoose.Schema({
-            _n: { type: Number, unique: true },
             deleted_at: { type: Date, default: null },
             ...definition
         }, {
