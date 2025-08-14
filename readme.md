@@ -53,6 +53,14 @@ import { useTasks } from "@xlsft/worker";
 useTasks()
 ```
 
+As this package utilizes dynamic imports and published on JSR, make sure you set `vendor` property to true in `deno.json`
+
+```json
+{
+    "vendor": true
+}
+```
+
 You can pass custom logger or disable logging whatsoever
 
 ```ts
