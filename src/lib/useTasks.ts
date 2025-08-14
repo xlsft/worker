@@ -33,32 +33,6 @@ export let log: Log | undefined = console
 /**
  * Load and import all task files from the specified directory.
  * Sets up logging and global event emitter.
- * @example - Default usage
-    ```ts
-    import { useTasks } from "@xlsft/worker";
-    useTasks()
-    ```
- * @example - Custom logger
-    ```ts
-    import { useTasks } from "@xlsft/worker";
-    const log = useLogger() // Some logger
-    useTasks({ log })
-    ```
- * @example - Disable logger
-    ```ts
-    import { useTasks } from "@xlsft/worker";
-    useTasks({ log: false }) // Disables logging
-    ```
-
-    @example - Change tasks folder
-    
-    Be aware that it needs to be path from `process.cwd()`
-
-    ```ts
-    import { useTasks } from "@xlsft/worker";
-    useTasks({ dir: 'src/tasks' })
-    ```
- * @param - Configuration options for task loading.
  */
 export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void => {
     event.setMaxListeners(Infinity);
@@ -69,7 +43,7 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${process.cwd()}/${path}`
     
     for (const entry of fs.readdirSync(dir)) { try {
-        if (!entry.endsWith('.task.ts')) continue
+        if (!['.task.ts', '.task.js', '.task.mts', '.task.mjs'].some(entry.endsWith)) continue
         import(`${dir}/${entry}`)
     } catch (e) { log?.error(e) } }
     setInterval(() => {}, 1);

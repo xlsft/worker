@@ -35,16 +35,17 @@
 
 <h2 id="start"><strong>⭐ Quick Start</strong></h2>
 
-**@xlsft/worker** is a simple but powerful worker framework.  
-It automatically loads and schedules all `*.task.ts` files from the `tasks` directory.  
+**@xlsft/worker** is a simple but powerful worker framework. Supported on `node`, `deno` and `bun`.
+It automatically loads and schedules all `*.task.[ts,js,mts,mjs]` files from the `tasks` directory.  
 Tasks can run on a cron schedule or be triggered by events.
 
 Install `@xlsft/worker` package
 
 ```bash
-pnpm add jsr:@xlsft/worker
-yarn add jsr:@xlsft/worker
-npx jsr add @xlsft/worker
+pnpm add jsr:@xlsft/worker # or...
+yarn add jsr:@xlsft/worker # or...
+npx jsr add @xlsft/worker # or...
+bunx jsr add @xlsft/worker
 ```
 
 Create `tasks` folder and entry file
@@ -78,20 +79,28 @@ import { useTasks } from "@xlsft/worker";
 useTasks({ dir: 'src/tasks' })
 ```
 
+Then run your script with following commands
+
+```bash
+deno run -A main.ts # or...
+bun run main.ts # or...
+node run main.js
+```
+
 <h2 id="structure"><strong>📂 Project Structure & Naming</strong></h2>
 
 All tasks must be placed in the `tasks` directory (or directory of your choice).
 File names follow the pattern:
 
 ``` ts
-<nn(optional)>.<name>.task.ts // 01.some_job.task.ts || some_job.task.ts
+<nn(optional)>.<name>.task.[ts,js,mts,mjs] // 01.some_job.task.ts || some_job.task.js || 03.job.task.mjs
 ```
 
 Where:
 
 - `nn(optional)` — numeric prefix for ordering in directory
 - `name` — task name
-- `.task.ts` — required suffix
+- `.task.[ts,js,mts,mjs]` — required suffix
 
 Example:
 
