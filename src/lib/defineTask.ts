@@ -3,7 +3,10 @@ import { event as events, log } from "./useTasks.ts";
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }
-
+/**
+ * Represents a task event, including its state, data, and execution control methods.
+ * @implements TaskEventInterface.
+ */
 export class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
@@ -37,6 +40,131 @@ export class TaskEvent implements TaskEventInterface {
     public readonly emit = events.emit
     
 }
+
+/**
+ * Define and register a new task.
+ * 
+ * @example - Cron based `cron syntax`
+    ```ts
+    import { defineTask } from "@xlsft/worker";
+
+    export default defineTask((event) => {
+        console.log('Running every minute');
+    }, '* * * * *');
+    ```
+ * @example - Cron based `Deno.CronSchedule`
+    ```ts
+    import { defineTask } from "@xlsft/worker";
+
+    export default defineTask((event) => {
+        console.log('Running every 30 minutes');
+    }, { minute: { every: 30 } });
+    ```
+ * @example - Event based
+    ```ts
+    import { defineTask } from "@xlsft/worker";
+
+    export default defineTask((event) => {
+        console.log('Triggered by event.emit("event")');
+    }, 'event');
+    ```
+ * @example - Event based from generated trigger (from task name)
+    ```ts
+    // name.task.ts
+
+    import { defineTask } from "@xlsft/worker";
+
+    export default defineTask(() => {
+        console.log('Triggered by event.emit("name")');
+    });
+    ```
+ * @example - Calling a Task from Another Task
+    ```ts
+    // 01.parent.task.ts
+
+    import { defineTask } from "@xlsft/worker";
+
+    export default defineTask(async (event) => {
+        console.log('Parent job running...');
+        event.emit('children');
+    }, { minute: { every: 1 } });
+
+    // 02.children.task.ts
+
+    import { defineTask, events } from "tasks";
+
+    export default defineTask(async () => {
+        console.log('Children job running');
+    }, 'children');
+    ```
+ * @example - Killing or Canceling Task
+
+    You can kill or cancel task using `event.kill()` or `event.cancel()`
+
+    The difference between canceling and killing a job is that canceling stops only the current run and allows you to start a new one, whereas killing stops the job entirely and it cannot be restarted
+
+    ```ts
+    // first_job.task.ts
+
+    import { defineTask } from "@xlsft/worker"
+
+    export default defineTask((event) => {
+        console.log('Job running');
+        event.cancel();
+        console.log('Unreachable');
+    }, 'first_job');
+
+    // second_job.task.ts
+
+    import { defineTask } from "@xlsft/worker"
+
+    export default defineTask((event) => {
+        console.log('Start first job');
+        event.emit('first_job'); // Works!
+    }, { minute: { every: 1 }});
+    ```
+
+    ```ts
+    // first_job.task.ts
+
+    import { defineTask } from "@xlsft/worker"
+
+    export default defineTask((event) => {
+        console.log('Job running');
+        event.kill();
+        console.log('Unreachable');
+    }, 'first_job');
+
+    // second_job.task.ts
+
+    import { defineTask } from "@xlsft/worker"
+
+    export default defineTask((event) => {
+        console.log('Start first job');
+        event.emit('first_job'); // Doesn`t work :(
+    }, { minute: { every: 1 }});
+    ```
+ * @example - Task Options
+
+    Now you can set 3 different modifications to your worker
+
+    1. `retry` – number of additional attempts the worker will make if the task fails
+    2. `times` – number of times the task should run in a single execution
+    3. `delay` – time in milliseconds to wait between task executions or retries
+
+    ```ts
+    export default defineTask(async () => {
+        console.log('Task starts, but fails');
+        throw new Error('Error');
+    }, 'event', { times: 2, delay: 2000, retry: 5 });
+    ```
+    In this example:
+
+    - The task will run 2 times (times: 2), but, if it fails, job will retry with 2 times again
+    - It will wait 2 seconds between each run or retry (delay: 2000)
+    - If it fails, it will retry up to 5 times (retry: 5)
+
+ */
 
 export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => {
 
@@ -80,5 +208,5 @@ export const defineTask: TaskModule = (task: Task, trigger?: TaskTrigger, option
     else events.on((event.data.trigger || event.data.name) as string, worker)
 
     return event
-    
+
 }

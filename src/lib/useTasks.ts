@@ -2,8 +2,48 @@ import type { Log } from "../types/log.types.ts";
 import { EventEmitter } from 'node:events';
 import { join } from "jsr:@std/path@1.1.2";
 
+/**
+ * Global event emitter used for task-related events.
+ * @type {EventEmitter}
+ */
 export const event: EventEmitter = new EventEmitter();
+
+/**
+ * Global logger instance. Can be `undefined`, `console`, or a custom logger implementing `Log`.
+ * @type {Log | undefined}
+ */
 export let log: Log | undefined = console
+
+/**
+ * Load and import all task files from the specified directory.
+ * Sets up logging and global event emitter.
+ * @example - Default usage
+    ```ts
+    import { useTasks } from "@xlsft/worker";
+    useTasks()
+    ```
+ * @example - Custom logger
+    ```ts
+    import { useTasks } from "@xlsft/worker";
+    const log = useLogger() // Some logger
+    useTasks({ log })
+    ```
+ * @example - Disable logger
+    ```ts
+    import { useTasks } from "@xlsft/worker";
+    useTasks({ log: false }) // Disables logging
+    ```
+
+    @example - Change tasks folder
+    
+    Be aware that it needs to be relative path from `Deno.cwd()`
+
+    ```ts
+    import { useTasks } from "@xlsft/worker";
+    useTasks({ dir: './src/tasks' })
+    ```
+ * @param - Configuration options for task loading.
+ */
 export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void => {
     event.setMaxListeners(Infinity)
     if (options?.log && (options.log as Log).info && (options.log as Log).error) log = options.log as Log
