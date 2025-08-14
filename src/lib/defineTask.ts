@@ -1,9 +1,34 @@
 import { event as events, log } from "./useTasks.ts";
 
-export type Task = (event: TaskEventInterface) => void | Promise<void>
+/**
+ * A function representing a task to be executed.
+ * @typedef {Task}
+ * @param {TaskEventInterface} event - The event context for the task, providing state, data, and control methods.
+ * @returns {void | Promise<void>} Can return nothing or a Promise for async operations.
+ */
+export type Task = (event: TaskEventInterface) => void | Promise<void>;
 
-export type TaskWorker = () => void
+/**
+ * A worker function responsible for invoking the task logic.
+ * This is typically bound to an event or scheduled execution.
+ * @typedef {TaskWorker}
+ * @returns {void}
+ */
+export type TaskWorker = () => void;
 
+/**
+ * Interface defining the shape of a task event object.
+ * @typedef {TaskEventInterface}
+ * @property {{ status: 'pending' | 'running' | 'success' | 'failed' | 'killed' | 'canceled', attempt?: number, more?: number }} state
+ *   Current state of the task. `attempt` indicates retry attempt count, `more` shows remaining runs.
+ * @property {{ name: string, trigger?: TaskTrigger, cron: boolean }} data
+ *   Metadata about the task, including name, trigger, and whether it is scheduled via cron.
+ * @property {Date} created - Timestamp when the task was created.
+ * @property {Date} updated - Timestamp when the task was last updated.
+ * @property {() => void} kill - Forcefully stop the task, setting status to `killed`.
+ * @property {() => void} cancel - Interrupt the task, setting status to `canceled`.
+ * @property {(event: string) => void} emit - Emit a custom event related to this task.
+ */
 export type TaskEventInterface = {
     state: {
         status: 'pending' | 'running' | 'success' | 'failed' | 'killed' | 'canceled'
@@ -22,15 +47,34 @@ export type TaskEventInterface = {
     emit: (event: string) => void
 }
 
-export type TaskTrigger = string | Deno.CronSchedule
+/**
+ * A task trigger, which can be an event name or a Deno cron schedule.
+ * @typedef {TaskTrigger}
+ */
+export type TaskTrigger = string | Deno.CronSchedule;
 
+/**
+ * Options for configuring a task's execution behavior.
+ * @typedef {TaskOptions}
+ * @property {number} [retry] - Number of times to retry the task on failure.
+ * @property {number} [delay] - Delay in milliseconds between task executions.
+ * @property {number} [times] - Number of times to run the task.
+ */
 export type TaskOptions = {
     retry?: number
     delay?: number
     times?: number
 }
 
-export type TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => void
+/**
+ * A function that defines and registers a task.
+ * @typedef {TaskModule}
+ * @param {Task} task - The task function to execute.
+ * @param {TaskTrigger} [trigger] - Optional event name or cron schedule for triggering the task.
+ * @param {TaskOptions} [options] - Optional configuration for retries, delays, and repetitions.
+ * @returns {void}
+ */
+export type TaskModule = (task: Task, trigger?: TaskTrigger, options?: TaskOptions) => void;
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }

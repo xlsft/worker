@@ -2,10 +2,20 @@
 import { EventEmitter } from 'node:events';
 import { join } from "jsr:@std/path@1.1.2";
 
+/**
+ * Interface for a logging utility.
+ * Used to output informational messages and errors.
+ * Compatible with `console` or any custom logger implementing the same methods.
+ *
+ * @typedef {Log}
+ * @property {(…message: any[]) => void} error - Log one or more error messages or objects.
+ * @property {(…message: any[]) => void} info - Log one or more informational messages or objects.
+ */
 export type Log = {
-    error: (...message: any[]) => void,
-    info: (...message: any[]) => void,
+    error: (...message: any[]) => void
+    info: (...message: any[]) => void
 }
+
 
 /**
  * Global event emitter used for task-related events.
