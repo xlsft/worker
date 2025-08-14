@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { EventEmitter } from 'node:events';
+import { encodeBase64 as encode } from 'jsr:@std/encoding/base64'
 
 /**
  * Interface for a logging utility.
@@ -14,7 +15,6 @@ export type Log = {
     error: (...message: any[]) => void
     info: (...message: any[]) => void
 }
-
 
 /**
  * Global event emitter used for task-related events.
@@ -67,6 +67,6 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${Deno.cwd()}/${path}`
     for (const entry of Deno.readDirSync(dir)) { try {
         if (!entry.isFile || !entry.name.endsWith('.task.ts')) continue
-        import(`${dir}/${entry.name}`)
+        import(`data:application/typescript;base64,${encode(Deno.readTextFileSync(`${dir}/${entry.name}`))}`)
     } catch (e) { log?.error(e) } }
 }
