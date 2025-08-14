@@ -10,7 +10,7 @@
 #
 
 <h4 align="center">
-    <strong>@xlsft/worker</strong> – Lightweight, event and cron-based task runner for Deno with zero-boilerplate setup and persisted logs
+    <strong>@xlsft/worker</strong> – Lightweight, event and cron-based task framework for Deno with zero-boilerplate setup and persisted logs
 </h4>
 <br/>
 <p align="right">
