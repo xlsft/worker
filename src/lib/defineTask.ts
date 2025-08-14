@@ -26,7 +26,6 @@ export type TaskWorker = () => void;
  * @property {{ name: string, trigger?: TaskTrigger, cron: boolean }} data
  *   Metadata about the task, including name, trigger, and whether it is scheduled via cron.
  * @property {Date} created - Timestamp when the task was created.
- * @property {Date} updated - Timestamp when the task was last updated.
  * @property {() => void} kill - Forcefully stop the task, setting status to `killed`.
  * @property {() => void} cancel - Interrupt the task, setting status to `canceled`.
  * @property {(event: string) => void} emit - Emit a custom event related to this task.
@@ -43,7 +42,6 @@ export type TaskEventInterface = {
         cron: boolean
     }
     created: Date
-    updated: Date
     kill: () => void
     cancel: () => void
     emit: (event: string) => boolean
@@ -138,7 +136,6 @@ class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { s
 export class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
-    public readonly updated: Date = new Date()
     public readonly state: TaskEventInterface['state'] = { status: 'pending' }
     public readonly data: TaskEventInterface['data']
 

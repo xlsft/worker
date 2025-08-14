@@ -204,7 +204,6 @@ export default defineTask((event) => {
     //  TaskEvent {
     //      worker: [Function: worker],
     //      created: 2025-08-14T16:34:31.990Z,
-    //      updated: 2025-08-14T16:34:31.990Z,
     //      state: { status: "running" },
     //      data: { name: "event", trigger: "event", cron: false },
     //      emit: [Function: emit]
