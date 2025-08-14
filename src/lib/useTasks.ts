@@ -68,6 +68,9 @@ export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void 
     const dir = `${Deno.cwd()}/${path}`
     for (const entry of Deno.readDirSync(dir)) { try {
         if (!entry.isFile || !entry.name.endsWith('.task.ts')) continue
-        import(`${dir}/${entry.name}`)
+        console.log(`${dir}/${entry.name}`)
+        // Don`t ask... JSR bug :)
+        //? https://github.com/denoland/deno/discussions/26266
+        import(`../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..${dir}/${entry.name}`)
     } catch (e) { log?.error(e) } }
 }

@@ -8,5 +8,6 @@
     "imports": {
         "@xlsft/worker": "./src/mod.ts"
     },
+    "vendor": true,
     "exports": "./src/mod.ts"
 }
