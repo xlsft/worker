@@ -171,7 +171,7 @@ export class TaskEvent implements TaskEventInterface {
         throw new TaskCancel();
     }
 
-    public readonly emit = (event: string): boolean => events.emit(event)
+    public readonly emit = (event: string): boolean => {console.log(events, event, this); return events.emit(event)}
     
 }
 
@@ -339,7 +339,7 @@ export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOpti
     
     if (event.data.cron === true) setTimeout(() => schedule.scheduleJob(event.data.trigger as string | Date, worker), 0)
     else events.on((event.data.trigger || event.data.name) as string, worker)
-
+    console.log(events)
     return event
 
 }
