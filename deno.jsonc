@@ -1,0 +1,9 @@
+{
+    "name": "@xlsft/worker",
+    "tasks": {
+        "dev": "deno run -A --watch --unstable-cron src/main.ts"
+    },
+    "imports": {
+        "tasks": "./src/index.ts"
+    }
+}
