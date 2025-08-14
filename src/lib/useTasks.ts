@@ -1,6 +1,11 @@
-import type { Log } from "../types/log.types.ts";
+// deno-lint-ignore-file no-explicit-any
 import { EventEmitter } from 'node:events';
 import { join } from "jsr:@std/path@1.1.2";
+
+export type Log = {
+    error: (...message: any[]) => void,
+    info: (...message: any[]) => void,
+}
 
 /**
  * Global event emitter used for task-related events.

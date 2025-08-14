@@ -6,8 +6,8 @@ export {
     useTasks, event,
 }
 
-import type { Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule } from "./types/task.types.ts"
-import type { Log } from "./types/log.types.ts";
+import type { Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule } from "./lib/defineTask.ts"
+import type { Log } from "./lib/useTasks.ts";
 
 export type {
     Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule,
