@@ -3,7 +3,11 @@ import { event as events, log } from "./useTasks.ts";
 
 class TaskKill extends Error { override name = 'TaskKill'; constructor() { super('') } }
 class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { super('') } }
-class TaskEvent implements TaskEventInterface {
+/**
+ * Represents a task event, including its state, data, and execution control methods.
+ * Implements TaskEventInterface.
+ */
+export class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
     public readonly updated: Date = new Date()

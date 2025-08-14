@@ -112,9 +112,9 @@ Examples:
 1. Cron based `cron syntax`:
 
 ```ts
-import { defineTask } from "@xlsft/worker";
+import { defineTask, TaskEvent } from "@xlsft/worker";
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Running every minute');
 }, '* * * * *');
 ```
@@ -122,9 +122,9 @@ export default defineTask((event) => {
 2. Cron based `Deno.CronSchedule`:
 
 ```ts
-import { defineTask } from "@xlsft/worker";
+import { defineTask, TaskEvent } from "@xlsft/worker";
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Running every 30 minutes');
 }, { minute: { every: 30 } });
 ```
@@ -132,9 +132,9 @@ export default defineTask((event) => {
 3. Event based:
 
 ```ts
-import { defineTask } from "@xlsft/worker";
+import { defineTask, TaskEvent } from "@xlsft/worker";
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Triggered by event.emit("event")');
 }, 'event');
 ```
@@ -144,9 +144,9 @@ export default defineTask((event) => {
 ```ts
 // name.task.ts
 
-import { defineTask } from "@xlsft/worker";
+import { defineTask, TaskEvent } from "@xlsft/worker";
 
-export default defineTask(() => {
+export default defineTask((event: TaskEvent) => {
     console.log('Triggered by event.emit("name")');
 });
 ```
@@ -173,7 +173,7 @@ For every task `event: TaskEvent` class is passed for logging or some other purp
 
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log(event);
     //  TaskEvent {
     //      worker: [Function: worker],
@@ -190,7 +190,7 @@ Ensure you **doesn\`t** modify event class, because `event` is _readonly_
 ```ts
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log(event);
     event.state.status = 'canceled'; // TS error
 }, { minute: { every: 1 }});
@@ -203,9 +203,9 @@ You can call (trigger) another task by emitting an event:
 ```ts
 // 01.parent.task.ts
 
-import { defineTask } from "@xlsft/worker";
+import { defineTask, TaskEvent } from "@xlsft/worker";
 
-export default defineTask(async (event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Parent job running...');
     event.emit('children');
 }, { minute: { every: 1 } });
@@ -214,7 +214,7 @@ export default defineTask(async (event) => {
 
 import { defineTask, events } from "tasks";
 
-export default defineTask(async () => {
+export default defineTask((event: TaskEvent) => {
     console.log('Children job running');
 }, 'children');
 ```
@@ -237,7 +237,7 @@ The difference between canceling and killing a job is that canceling stops only 
 
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Job running');
     event.cancel();
     console.log('Unreachable');
@@ -247,7 +247,7 @@ export default defineTask((event) => {
 
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Start first job');
     event.emit('first_job'); // Works!
 }, { minute: { every: 1 }});
@@ -258,7 +258,7 @@ export default defineTask((event) => {
 
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Job running');
     event.kill();
     console.log('Unreachable');
@@ -268,7 +268,7 @@ export default defineTask((event) => {
 
 import { defineTask } from "@xlsft/worker"
 
-export default defineTask((event) => {
+export default defineTask((event: TaskEvent) => {
     console.log('Start first job');
     event.emit('first_job'); // Doesn`t work :(
 }, { minute: { every: 1 }});
@@ -283,7 +283,7 @@ Now you can set 3 different modifications to your worker
 3. `delay` – time in milliseconds to wait between task executions or retries
 
 ```ts
-export default defineTask(async () => {
+export default defineTask((event: TaskEvent) => {
     console.log('Task starts, but fails');
     throw new Error('Error');
 }, 'event', { times: 2, delay: 2000, retry: 5 });
