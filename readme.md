@@ -331,6 +331,11 @@ In this example:
 
 - [ ] Pass logger into event object with custom prefix
 - [ ] Add task awaiting if previous task take more time than duration between calls
+- [ ] Add TaskTimings class into event object with estimated and elapsed time
+- [ ] Throw an error if try to emit cron string
+- [ ] Add an coroutines to tasks (at least try to)
+- [ ] Add log at start of the task
+
 
 <br/>
 
