@@ -30,6 +30,7 @@
 * <a href="#kill">Killing or Canceling Task</a>
 * <a href="#options">Task Options</a>
 * <a href="#status">Project Status</a>
+* <a href="#todo">To do</a>
 
 ---
 
@@ -322,9 +323,14 @@ In this example:
 - It will wait 2 seconds between each run or retry (delay: 2000)
 - If it fails, it will retry up to 5 times (retry: 5)
 
-<h2 id="status"><strong>📌 Project Status</strong></h2>
+<h2 id="status"><strong>🚧 Project Status</strong></h2>
 
 **Testing in production** — API and internal structure are stable, but needs testing for edge-cases
+
+<h2 id="todo"><strong>✅ To do</strong></h2>
+
+- [ ] Pass logger into event object with custom prefix
+- [ ] Add task awaiting if previous task take more time than duration between calls
 
 <br/>
 
