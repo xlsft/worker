@@ -45,7 +45,7 @@ export const defineCoroutine = <Payload = unknown>(
     worker: TaskAsyncWorker<Payload>,
     threads: number,
     payloads?: Payload[] | (() => Promise<Payload[]>)
-) => {
+): Promise<void> => {
 let queue: Payload[] = []
     let active = 0
 
