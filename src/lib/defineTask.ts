@@ -1,6 +1,6 @@
 /// <reference types="npm:@types/node-schedule@2.1.8" />
 
-import { event as events, log } from "./useTasks.ts";
+import { event as events, type Log, log } from "./useTasks.ts";
 import schedule from 'npm:node-schedule@2.1.1'
 /**
  * A function representing a task to be executed.
@@ -35,6 +35,7 @@ export type TaskEventInterface = {
         status: 'pending' | 'running' | 'success' | 'failed' | 'killed' | 'canceled'
         attempt?: number
         more?: number
+        active?: number
     }
     data: {
         name: string
@@ -44,7 +45,8 @@ export type TaskEventInterface = {
     created: Date
     kill: () => void
     cancel: () => void
-    emit: (event: string) => boolean
+    emit: (event: string) => boolean,
+    log: Log
 }
 
 /**
@@ -141,17 +143,13 @@ export class TaskEvent implements TaskEventInterface {
 
     constructor(caller: string[], private worker: TaskWorker, trigger?: TaskTrigger) {
         const name = isNaN(Number(caller[0])) ? caller[0] : caller[1]
-        const cron = !!trigger && (
-            trigger instanceof Date ||
-            typeof trigger === 'object' ||
-            (typeof trigger === 'string' && /^(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)(\s+(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)){4}$/.test(trigger.trim()))
-        );
+
 
         const _trigger = trigger ? (trigger instanceof Date || typeof trigger === 'string') ? trigger : convert(trigger as TaskCronScheduleSchema) : name
         this.data = {
             name: name,
             trigger: _trigger,
-            cron: cron
+            cron: isCron(trigger)
         }
     }
 
@@ -169,10 +167,34 @@ export class TaskEvent implements TaskEventInterface {
     }
 
     public emit(event: string): boolean {
-        return events.emit(event)
+        return emit(event)
+    }
+
+    public readonly log: Log = {
+        // deno-lint-ignore no-explicit-any
+        error: (...message: any[]) => (log || console).error(`[${this.data.name}]`, ...message),
+        // deno-lint-ignore no-explicit-any
+        info: (...message: any[]) => (log || console).info(`[${this.data.name}]`, ...message)
     }
     
 }
+
+/**
+ * Emits a custom event by name.
+ *
+ * @param {string} event - The name of the event to emit.
+ * @returns {boolean} Whether the event had listeners and was successfully emitted.
+ */
+export const emit = (event: string): boolean => {
+    if (isCron(event)) throw new Error('Event name can`t be an cron string')
+    return events.emit(event)
+}
+
+const isCron = (trigger?: TaskTrigger) => !!trigger && (
+    trigger instanceof Date ||
+    typeof trigger === 'object' ||
+    (typeof trigger === 'string' && /^(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)(\s+(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)){4}$/.test(trigger.trim()))
+);
 
 /**
  * Define and register a new task.
@@ -182,6 +204,7 @@ export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOpti
     const caller = ((new Error().stack?.split("\n").find(l => l.match(/\.(cjs|mjs|cts|mts|js|ts)(?::\d+:\d+)?$/))?.match(/(?:file:\/\/)?(.*?):\d+:\d+/)?.[1]?.split(/[\\/]/).pop() || "00.unknown.task.ts").split('.'));
 
     const worker: TaskWorker = () => { 
+        log?.info(`✨ Task "${event.data.name}" started`, event)
         if (event.state.status === 'killed') { return };
         let attempts = options?.retry ? options.retry - 1 : 0
         const job = async () => {

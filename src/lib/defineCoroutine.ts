@@ -1,0 +1,79 @@
+import type { TaskEventInterface } from "./defineTask.ts";
+
+/**
+ * An asynchronous worker function that processes a single payload.
+ *
+ * @template T The type of payload handled by the worker.
+ * @typedef {TaskAsyncWorker}
+ * @param {T} payload - The payload item to process.
+ * @returns {Promise<void>} A promise that resolves when processing is complete.
+ */
+export type TaskAsyncWorker<T = unknown> = (payload: T, event: TaskEventInterface) => Promise<void>
+
+/**
+ * Define a coroutine that processes a queue of payloads concurrently with a fixed number of worker threads.
+ *
+ * @template Payload The type of payload items in the queue.
+ * @param {TaskEventInterface} event - The task event associated with the coroutine.  
+ *   If the event state changes from `"pending"`, processing will stop.
+ * @param {TaskAsyncWorker<Payload>} worker - The async worker function that processes each payload.
+ * @param {number} threads - Maximum number of concurrent workers allowed.
+ * @param {Payload[]} [payloads=[]] - Initial queue of payload items to process.
+ * @returns {Promise<void>} Resolves when all payloads have been processed or rejects if any worker throws.
+ *
+ * @example
+ * ```ts
+import { defineTask, defineCoroutine } from "@xlsft/worker"
+
+const fetchPage = async (page: number) => {
+    await new Promise(r => setTimeout(r, 10000))
+    return { page, data: [] }
+}
+
+export default defineTask(async (event) => {
+    const pages = Array.from({ length: 70 }, (_, i) => i + 1)
+
+    await defineCoroutine(event, async (payload) => { 
+        await fetchPage(payload)
+    }, 10, pages)
+})
+
+ * ```
+ */
+export const defineCoroutine = <Payload = unknown>(
+    event: TaskEventInterface,
+    worker: TaskAsyncWorker<Payload>,
+    threads: number,
+    payloads?: Payload[] | (() => Promise<Payload[]>)
+) => {
+let queue: Payload[] = []
+    let active = 0
+
+    return new Promise<void>((resolve, reject) => {
+        const init = async () => {
+            try {
+                if (typeof payloads === "function") queue = await payloads()
+                else if (Array.isArray(payloads)) queue = [...payloads]
+                else queue = []
+            } catch (err) { reject(err); return }
+
+            const next = () => {
+                event.state.active = undefined
+                if (event.state.status !== "pending" && event.state.status !== "running") return
+                if (queue.length === 0 && active === 0) return resolve()
+                     
+                while ((queue.length > 0 || payloads === undefined) && active < threads) {
+                    const payload = queue.length > 0 ? queue.shift()! : undefined as unknown as Payload
+                    active++
+                    event.state.active = active
+                    worker(payload, event).catch(reject).finally(() => {
+                        active--
+                        event.state.active = active
+                        next()
+                    })
+                    if (payloads === undefined) { event.state.active = undefined; break } 
+                }
+            }; next()
+        }; init()
+    })
+}
