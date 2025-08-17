@@ -34,7 +34,7 @@ export let log: Log | undefined = console
  * Load and import all task files from the specified directory.
  * Sets up logging and global event emitter.
  */
-export const useTasks = (options?: { log?: Log | boolean, dir?: string }): void => {
+export const defineWorker = (options?: { log?: Log | boolean, dir?: string }): void => {
     event.setMaxListeners(Infinity);
     if (options?.log && (options.log as Log).info && (options.log as Log).error) log = options.log as Log
     else if (options?.log === false) log = undefined

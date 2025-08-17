@@ -15,9 +15,20 @@ export type TaskAsyncWorker<T = unknown> = (payload: T, event: TaskAsyncEventInt
  */
 export type TaskAsyncEventInterface = TaskEventInterface & {
     state: {
-        active?: number
+        routines?: number
     }
     break: () => void
+}
+
+/**
+ * Options for configuring a routine's execution behavior.
+ * @typedef {TaskOptions}
+ * @property {number} [retry] - Number of times to retry the routine on failure.
+ * @property {number} [delay] - Delay in milliseconds between routine`s executions.
+ */
+export type TaskAsyncOptions = {
+    retry?: number
+    delay?: number
 }
 
 /**
@@ -50,11 +61,12 @@ export default defineTask(async (event) => {
 
  * ```
  */
-export const defineCoroutine = <Payload = unknown>(
+export const defineRoutine = <Payload = unknown>(
     e: TaskEventInterface,
     worker: TaskAsyncWorker<Payload>,
     threads: number,
-    payloads?: Payload[] | (() => Promise<Payload[]>)
+    payloads?: Payload[] | (() => Promise<Payload[]>),
+    options?: TaskAsyncOptions
 ): Promise<void> => {
     const event: TaskAsyncEventInterface = {
         ...e,
@@ -74,20 +86,33 @@ export const defineCoroutine = <Payload = unknown>(
 
             const next = () => {
                 if (breaked) return resolve()
-                event.state.active = undefined
+                event.state.routines = undefined
                 if (event.state.status !== "pending" && event.state.status !== "running") return
                 if (queue.length === 0 && active === 0) return resolve()
                      
                 while ((queue.length > 0 || payloads === undefined) && active < threads && !breaked) {
                     const payload = queue.length > 0 ? queue.shift()! : undefined as unknown as Payload
                     active++
-                    event.state.active = active
-                    worker(payload, event).catch(reject).finally(() => {
-                        active--
-                        event.state.active = active
-                        next()
-                    })
-                    if (payloads === undefined) { event.state.active = undefined; break } 
+                    event.state.routines = active
+                    let attempt = 0
+                    const job = async () => {
+                        if (options?.delay) await new Promise(resolve => setTimeout(resolve, options.delay));
+                        worker(payload, event).catch(reject).finally(() => {
+                            active--
+                            event.state.routines = active
+                            next()
+                        })
+                    }
+                    try {
+                        job()
+                    } catch (e) {
+                        event.log.error(e);
+                        if (attempt >= (options?.retry || 0)) return
+                        attempt++
+                        job()
+                    }
+        
+                    if (payloads === undefined) { event.state.routines = undefined; break } 
                 }
             }; next()
         }; init()

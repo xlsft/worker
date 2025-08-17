@@ -55,32 +55,32 @@ bunx jsr add @xlsft/worker
 Create `tasks` folder and entry file
 
 ```ts
-import { useTasks } from "@xlsft/worker";
+import { defineWorker } from "@xlsft/worker";
 
-useTasks()
+defineWorker()
 ```
 
 You can pass custom logger or disable logging whatsoever
 
 ```ts
-import { useTasks } from "@xlsft/worker";
+import { defineWorker } from "@xlsft/worker";
 const log = useLogger() // Some logger
 
-useTasks({ log })
+defineWorker({ log })
 ```
 
 ```ts
-import { useTasks } from "@xlsft/worker";
+import { defineWorker } from "@xlsft/worker";
 
-useTasks({ log: false }) // Disables logging
+defineWorker({ log: false }) // Disables logging
 ```
 
 Also you can change default `tasks` folder, be aware that it needs to be path from `process.cwd()`
 
 ```ts
-import { useTasks } from "@xlsft/worker";
+import { defineWorker } from "@xlsft/worker";
 
-useTasks({ dir: 'src/tasks' })
+defineWorker({ dir: 'src/tasks' })
 ```
 
 Then run your script with following commands
@@ -335,6 +335,8 @@ In this example:
 - [x] Add an coroutines to tasks (at least try to)
 - [ ] Add coroutines docs
 - [x] Add log at start of the task
+- [x] Check for infinity in retry function
+- [x] Retry function in coroutines
 
 
 <br/>

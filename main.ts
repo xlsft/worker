@@ -1,3 +1,3 @@
-import { useTasks } from "@xlsft/worker";
+import { defineWorker } from "@xlsft/worker";
 
-useTasks({ log: true })
+defineWorker({ log: true })

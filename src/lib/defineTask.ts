@@ -1,6 +1,6 @@
 /// <reference types="npm:@types/node-schedule@2.1.8" />
 
-import { event as events, type Log, log } from "./useTasks.ts";
+import { event as events, type Log, log } from "./defineWorker.ts";
 import schedule from 'npm:node-schedule@2.1.1'
 /**
  * A function representing a task to be executed.
@@ -206,9 +206,9 @@ export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOpti
     const worker: TaskWorker = () => { 
         log?.info(`✨ Task "${event.data.name}" started`, event)
         if (event.state.status === 'killed') { return };
-        let attempts = options?.retry ? options.retry - 1 : 0
+        let attempt = 0
         const job = async () => {
-            if (options?.retry) event.state.attempt = Math.abs(attempts - options.retry)
+            if (options?.retry) event.state.attempt = attempt
             for (let i = 0; i < (options?.times || 1); i++) {
                 if (event.state.status === 'canceled') continue
                 if (options?.times) event.state.more = (options.times - i) - 1
@@ -224,8 +224,8 @@ export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOpti
                     else { 
                         log?.error(e); event.state.status = 'failed'; log?.error(`❌ Task "${event.data.name}" failed`, event)
                         event.state.status = 'pending'
-                        if (attempts === 0) return
-                        attempts--
+                        if (attempt >= (options?.retry || 0)) return
+                        attempt++
                         job()
                     }
                 };
