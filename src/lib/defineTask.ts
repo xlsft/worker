@@ -43,6 +43,7 @@ export type TaskEventInterface = {
         cron: boolean
     }
     created: Date
+    finished?: Date
     kill: () => void
     cancel: () => void
     emit: (event: string) => boolean,
@@ -96,11 +97,13 @@ export type TaskTrigger = string | Date | TaskCronScheduleSchema;
  * @property {number} [retry] - Number of times to retry the task on failure.
  * @property {number} [delay] - Delay in milliseconds between task executions.
  * @property {number} [times] - Number of times to run the task.
+ * @property {string[]} [depends] - On what task depends on, and will not run if they running
  */
 export type TaskOptions = {
     retry?: number
     delay?: number
     times?: number
+    depends?: string[]
 }
 
 /**
@@ -138,6 +141,7 @@ class TaskCancel extends Error { override name = 'TaskCancel'; constructor() { s
 export class TaskEvent implements TaskEventInterface {
 
     public readonly created: Date = new Date()
+    public finished: Date | undefined = undefined
     public readonly state: TaskEventInterface['state'] = { status: 'pending' }
     public readonly data: TaskEventInterface['data']
 
@@ -156,7 +160,7 @@ export class TaskEvent implements TaskEventInterface {
     public kill() {
         this.state.status = 'killed'
         log?.info(`🔪 Task killed "${this.data.name}"`, this)
-        if (!this.data.cron) events.off((this.data.trigger || this.data.name) as string, this.worker)
+        events.off((this.data.cron === true ? (this.data.trigger || this.data.name) : this.data.name) as string, this.worker)
         throw new TaskKill();
     }
 
@@ -169,10 +173,14 @@ export class TaskEvent implements TaskEventInterface {
     public emit(event: string): boolean {
         return emit(event)
     }
-
+    
     public readonly log: Log = {
         // deno-lint-ignore no-explicit-any
         error: (...message: any[]) => (log || console).error(`[${this.data.name}]`, ...message),
+        // deno-lint-ignore no-explicit-any
+        log: (...message: any[]) => (log || console).log(`[${this.data.name}]`, ...message),
+        // deno-lint-ignore no-explicit-any
+        warn: (...message: any[]) => (log || console).warn(`[${this.data.name}]`, ...message),
         // deno-lint-ignore no-explicit-any
         info: (...message: any[]) => (log || console).info(`[${this.data.name}]`, ...message)
     }
@@ -196,50 +204,60 @@ const isCron = (trigger?: TaskTrigger) => !!trigger && (
     (typeof trigger === 'string' && /^(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)(\s+(\*|\d+(-\d+)?(\/\d+)?(,\d+)?)){4}$/.test(trigger.trim()))
 );
 
+const globalEvents: Record<string, TaskEvent> = {}
+
 /**
  * Define and register a new task.
  */
 export const defineTask = (task: Task, trigger?: TaskTrigger, options?: TaskOptions): TaskEvent => {
 
     const caller = ((new Error().stack?.split("\n").find(l => l.match(/\.(cjs|mjs|cts|mts|js|ts)(?::\d+:\d+)?$/))?.match(/(?:file:\/\/)?(.*?):\d+:\d+/)?.[1]?.split(/[\\/]/).pop() || "00.unknown.task.ts").split('.'));
+    const name = isNaN(Number(caller[0])) ? caller[0] : caller[1]
 
     const worker: TaskWorker = () => { 
-        log?.info(`✨ Task "${event.data.name}" started`, event)
-        if (event.state.status === 'killed') { return };
+        log?.info(`✨ Task "${globalEvents[name].data.name}" started`, globalEvents[name])
+        if (globalEvents[name].state.status === 'killed') { return };
         let attempt = 0
         const job = async () => {
-            if (options?.retry) event.state.attempt = attempt
+            if (options?.retry) globalEvents[name].state.attempt = attempt
             for (let i = 0; i < (options?.times || 1); i++) {
-                if (event.state.status === 'canceled') continue
-                if (options?.times) event.state.more = (options.times - i) - 1
+                if (options?.depends?.length) await new Promise(resolve => { log?.info(`⏳ Waiting for dependent tasks: ${options.depends!.join(", ")}`, options.depends!.map(name => globalEvents[name])); const check = () => {
+                    const events = options.depends!.map(name => globalEvents[name])
+                    if (events.every(event => event.state.status !== 'running')) resolve(true)
+                    else {
+                        setTimeout(check, 1)
+                    }
+                }; check() })
+                if (globalEvents[name].state.status === 'canceled') continue
+                globalEvents[name].state.status = 'pending'
+                if (options?.times) globalEvents[name].state.more = (options.times - i) - 1
                 if (options?.delay) await new Promise(resolve => setTimeout(resolve, options.delay));
                 try {
-                    event.state.status = 'running'
-                    await task(event as TaskEvent)
-                    event.state.status = 'success'
-                    log?.info(`✅ Task "${event.data.name}" successfully completed`, event)
+                    globalEvents[name].state.status = 'running'
+                    await task(globalEvents[name])
+                    globalEvents[name].state.status = 'success'
+                    globalEvents[name].finished = new Date()
+                    log?.info(`✅ Task "${globalEvents[name].data.name}" successfully completed`, globalEvents[name])
                 } catch (e) { 
                     if (e instanceof TaskKill) return
                     else if (e instanceof TaskCancel) continue
                     else { 
-                        log?.error(e); event.state.status = 'failed'; log?.error(`❌ Task "${event.data.name}" failed`, event)
-                        event.state.status = 'pending'
+                        log?.error(e); globalEvents[name].state.status = 'failed'; log?.error(`❌ Task "${globalEvents[name].data.name}" failed`, globalEvents[name])
                         if (attempt >= (options?.retry || 0)) return
                         attempt++
                         job()
                     }
                 };
             }
-            if (event.state.status === 'canceled') event.state.status = 'pending'
+            if (globalEvents[name].state.status === 'canceled') globalEvents[name].state.status = 'pending'
         }; job()
     }
 
-    const event = new TaskEvent(caller, worker, trigger)
+    globalEvents[name] = new TaskEvent(caller, worker, trigger)
 
-    log?.info(`🎯 Defining new task "${event.data.name}"`, event)
-    
-    if (event.data.cron === true) setTimeout(() => schedule.scheduleJob(event.data.trigger as string | Date, worker), 0)
-    else events.on((event.data.trigger || event.data.name) as string, worker)
-    return event
+    log?.info(`🎯 Defining new task "${globalEvents[name].data.name}"`, globalEvents[name])
+    if (globalEvents[name].data.cron === true) setTimeout(() => schedule.scheduleJob(globalEvents[name].data.trigger as string | Date, worker), 0)
+    events.on((globalEvents[name].data.cron === true ? (globalEvents[name].data.trigger || globalEvents[name].data.name) : globalEvents[name].data.name) as string, worker)
+    return globalEvents[name]
 
 }

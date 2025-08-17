@@ -15,6 +15,8 @@ import process from "node:process";
 export type Log = {
     error: (...message: any[]) => void
     info: (...message: any[]) => void
+    warn: (...message: any[]) => void
+    log: (...message: any[]) => void
 }
 
 

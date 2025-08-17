@@ -164,7 +164,16 @@ import { defineTask } from "@xlsft/worker";
 
 export default defineTask((event) => {
     console.log('Triggered by event.emit("name")');
-});
+}); 
+
+// Works with cron too
+
+import { defineTask } from "@xlsft/worker";
+
+export default defineTask((event) => {
+    console.log('Triggered by event.emit("name") and every 30 minutes');
+}, { minute: { every: 30 } }); 
+
 ```
 
 5. Date based:
@@ -330,14 +339,15 @@ In this example:
 <h2 id="todo"><strong>✅ To do</strong></h2>
 
 - [x] Pass logger into event object with custom prefix
-- [ ] Add task awaiting if previous task take more time than duration between calls
 - [x] Throw an error if try to emit cron string
 - [x] Add an coroutines to tasks (at least try to)
 - [ ] Add coroutines docs
 - [x] Add log at start of the task
 - [x] Check for infinity in retry function
 - [x] Retry function in coroutines
-
+- [x] Emit working on cron triggers by name
+- [x] Depends option in task 
+- [ ] Add dependencies docs
 
 <br/>
 
