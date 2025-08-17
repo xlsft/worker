@@ -11,6 +11,16 @@ import type { TaskEventInterface } from "./defineTask.ts";
 export type TaskAsyncWorker<T = unknown> = (payload: T, event: TaskEventInterface) => Promise<void>
 
 /**
+ * Event interface for asynchronous tasks.
+ */
+export type TaskAsyncEventInterface = TaskEventInterface & {
+    state: {
+        active?: number
+    }
+    break: () => void
+}
+
+/**
  * Define a coroutine that processes a queue of payloads concurrently with a fixed number of worker threads.
  *
  * @template Payload The type of payload items in the queue.
@@ -41,12 +51,17 @@ export default defineTask(async (event) => {
  * ```
  */
 export const defineCoroutine = <Payload = unknown>(
-    event: TaskEventInterface,
+    e: TaskEventInterface,
     worker: TaskAsyncWorker<Payload>,
     threads: number,
     payloads?: Payload[] | (() => Promise<Payload[]>)
 ): Promise<void> => {
-let queue: Payload[] = []
+    const event: TaskAsyncEventInterface = {
+        ...e,
+        break: () => breaked = true
+    }
+    let breaked = false
+    let queue: Payload[] = []
     let active = 0
 
     return new Promise<void>((resolve, reject) => {
@@ -58,11 +73,12 @@ let queue: Payload[] = []
             } catch (err) { reject(err); return }
 
             const next = () => {
+                if (breaked) return resolve()
                 event.state.active = undefined
                 if (event.state.status !== "pending" && event.state.status !== "running") return
                 if (queue.length === 0 && active === 0) return resolve()
                      
-                while ((queue.length > 0 || payloads === undefined) && active < threads) {
+                while ((queue.length > 0 || payloads === undefined) && active < threads && !breaked) {
                     const payload = queue.length > 0 ? queue.shift()! : undefined as unknown as Payload
                     active++
                     event.state.active = active

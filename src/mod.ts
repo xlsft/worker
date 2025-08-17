@@ -10,10 +10,10 @@ export {
 
 import type { Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule, TaskCronScheduleSchema, TaskCronScheduleSchemaItem } from "./lib/defineTask.ts"
 import type { Log } from "./lib/useTasks.ts";
-import type { TaskAsyncWorker } from "./lib/defineCoroutine.ts";
+import type { TaskAsyncWorker, TaskAsyncEventInterface } from "./lib/defineCoroutine.ts";
 
 export type {
     Task, TaskWorker, TaskEventInterface, TaskTrigger, TaskOptions, TaskModule, TaskCronScheduleSchema, TaskCronScheduleSchemaItem,
     Log,
-    TaskAsyncWorker
+    TaskAsyncWorker, TaskAsyncEventInterface
 }
