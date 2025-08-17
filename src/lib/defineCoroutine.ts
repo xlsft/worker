@@ -8,7 +8,7 @@ import type { TaskEventInterface } from "./defineTask.ts";
  * @param {T} payload - The payload item to process.
  * @returns {Promise<void>} A promise that resolves when processing is complete.
  */
-export type TaskAsyncWorker<T = unknown> = (payload: T, event: TaskEventInterface) => Promise<void>
+export type TaskAsyncWorker<T = unknown> = (payload: T, event: TaskAsyncEventInterface) => Promise<void>
 
 /**
  * Event interface for asynchronous tasks.
