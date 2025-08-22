@@ -47,6 +47,9 @@ export type TaskEventInterface = {
     kill: () => void
     cancel: () => void
     emit: (event: string) => boolean,
+    on: (event: string, listener: (...args: unknown[]) => void) => void,
+    off: (event: string, listener: (...args: unknown[]) => void) => void,
+    schedule: (trigger: TaskTrigger, listener: (...args: unknown[]) => void) => void,
     log: Log
 }
 
@@ -172,6 +175,20 @@ export class TaskEvent implements TaskEventInterface {
 
     public emit(event: string): boolean {
         return emit(event)
+    }
+
+    public on(event: string, listener: (...args: unknown[]) => void) {
+        events.on(event, listener)
+    }
+
+    public off(event: string, listener: (...args: unknown[]) => void) {
+        events.off(event, listener)
+    }
+
+    public schedule(trigger: TaskTrigger, listener: (...args: unknown[]) => void) {
+        if (!isCron(trigger)) throw new Error('Schedule must be a cron string, Date, or schema')
+        const _trigger = (trigger instanceof Date || typeof trigger === 'string') ? trigger : convert(trigger as TaskCronScheduleSchema)
+        setTimeout(() => schedule.scheduleJob(_trigger, listener), 0)
     }
     
     public readonly log: Log = {
